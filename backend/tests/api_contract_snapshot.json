@@ -1,0 +1,148 @@
+{
+  "source": "https://api.sixtyfour.ai/openapi.json",
+  "retrieved": "2026-09-26",
+  "requests": {
+    "/people-intelligence-async": {
+      "required": [
+        "lead_info"
+      ],
+      "properties": [
+        "struct",
+        "research_plan",
+        "tier",
+        "webhook_url",
+        "field_confidence",
+        "lead_info",
+        "include_workspace",
+        "investigation_id",
+        "investigation_name",
+        "budget",
+        "dispatch_id",
+        "exclusive_run"
+      ]
+    },
+    "/company-intelligence-async": {
+      "required": [
+        "struct",
+        "target_company"
+      ],
+      "properties": [
+        "struct",
+        "find_people",
+        "people_focus_prompt",
+        "lead_struct",
+        "research_plan",
+        "tier",
+        "full_org_chart",
+        "webhook_url",
+        "field_confidence",
+        "target_company"
+      ]
+    },
+    "/find-email-async": {
+      "required": [
+        "lead"
+      ],
+      "properties": [
+        "lead",
+        "verify_emails",
+        "mode",
+        "webhook_url"
+      ]
+    },
+    "/find-phone-async": {
+      "required": [
+        "lead"
+      ],
+      "properties": [
+        "lead",
+        "webhook_url"
+      ]
+    },
+    "/reverse-email-async": {
+      "required": [
+        "lead"
+      ],
+      "properties": [
+        "lead",
+        "webhook_url"
+      ]
+    },
+    "/enrich-linkedin": {
+      "required": [
+        "linkedin_url"
+      ],
+      "properties": [
+        "linkedin_url",
+        "struct"
+      ]
+    },
+    "/qa-agent-async": {
+      "required": [
+        "data",
+        "qualification_criteria"
+      ],
+      "properties": [
+        "data",
+        "qualification_criteria",
+        "references",
+        "struct",
+        "max_tool_calls",
+        "webhook_url"
+      ]
+    },
+    "/search/start-deep-search": {
+      "required": [
+        "query"
+      ],
+      "properties": [
+        "query",
+        "mode",
+        "max_results",
+        "search_id",
+        "output_mode",
+        "exclude_public_ids",
+        "exclude_entity_ids",
+        "exclude_list_ids"
+      ]
+    },
+    "/search/query": {
+      "required": [],
+      "properties": [
+        "simple_filters",
+        "filters",
+        "parsed_query",
+        "search_id",
+        "query",
+        "query_label",
+        "persist_history",
+        "from_offset",
+        "cursor",
+        "mode",
+        "page_size",
+        "max_results",
+        "output_shape",
+        "selected_company_names",
+        "selected_company_ids",
+        "exclude_public_ids",
+        "exclude_entity_ids",
+        "exclude_list_ids",
+        "expand_structured_location",
+        "location_expansion_enabled",
+        "location_expansion_radius_miles"
+      ]
+    },
+    "/search/filter-field-values": {
+      "required": [
+        "field"
+      ],
+      "properties": [
+        "mode",
+        "field",
+        "top_k",
+        "filters",
+        "simple_filters"
+      ]
+    }
+  }
+}
