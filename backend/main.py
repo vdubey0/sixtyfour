@@ -14,8 +14,10 @@ from backend.blocks.sixtyfour import ROOT, setting
 from backend.schemas import FinalRequest, ExecuteResponse
 from backend.engine.build_flow import create_flow
 from backend.engine.execution import process_flow
+from backend.agent.routes import router as agent_router
 
 app = FastAPI()
+app.include_router(agent_router)
 app.add_middleware(CORSMiddleware, allow_origins=['http://localhost:5173', 'http://localhost:5174', 'http://127.0.0.1:5173', 'http://127.0.0.1:5174'],
                    allow_credentials=True, allow_methods=['*'], allow_headers=['*'])
 

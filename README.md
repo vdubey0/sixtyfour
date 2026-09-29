@@ -64,7 +64,6 @@ An optional **Jev** mode uses TypeSafe to select among supported actions, fallin
 │   ├── main.py                 # FastAPI app, workflow, upload, and download routes
 │   ├── schemas.py              # Workflow request and response models
 │   ├── requirements.txt        # Python dependencies
-│   ├── .env.example            # API credentials and configuration template
 │   ├── blocks/                 # 18 tools and shared API/data helpers
 │   ├── engine/                 # Registry, graph validation, and execution
 │   ├── agent/                  # Planner, LangGraph loop, limits, and Jev routing
@@ -110,11 +109,11 @@ The virtual environment name matches the default interpreter used by `start.sh`;
 
 ### 2. Configure credentials
 
-Create the local configuration file if it does not already exist:
+Create the ignored local configuration file if it does not already exist:
 
 ```bash
 if [ ! -f backend/.env ]; then
-  cp backend/.env.example backend/.env
+  touch backend/.env
 fi
 ```
 

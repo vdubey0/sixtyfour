@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -132,7 +132,7 @@ const edgeOptions = {
   style: { stroke: "#858585", strokeWidth: 1.7 },
 };
 
-function Editor() {
+function Editor({ modeSwitch }: { modeSwitch?: ReactNode }) {
   const [catalog, setCatalog] = useState<BlockDefinition[]>([]);
   const [catalogError, setCatalogError] = useState("");
   const [apiConfigured, setApiConfigured] = useState(false);
@@ -421,6 +421,7 @@ function Editor() {
           <span className="brand-divider" />
           <span className="workspace-label">Workflow studio</span>
         </div>
+        {modeSwitch}
         <span className="api-status">{catalog.length ? (apiConfigured ? "API key configured" : "Set SIXTYFOUR_API_KEY in backend/.env") : "Connecting to backend…"}</span>
       </header>
       <div className="workspace-toolbar">
@@ -658,10 +659,10 @@ function Editor() {
     </CatalogContext.Provider>
   );
 }
-export function BlockEditor() {
+export function BlockEditor({ modeSwitch }: { modeSwitch?: ReactNode }) {
   return (
     <ReactFlowProvider>
-      <Editor />
+      <Editor modeSwitch={modeSwitch} />
     </ReactFlowProvider>
   );
 }

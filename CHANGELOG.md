@@ -1,3 +1,29 @@
+# Optional Jev routing — 2026-09-27
+
+- Route on selected-choice probability separately from TypeSafe confidence, with
+  a configurable 60% default cutoff and a 15-point lead over the runner-up.
+  Focus the routing question on the next useful action and explain fallback scores.
+- Added an off-by-default Jev switch with a purple enabled state and per-run mode.
+- Added a direct TypeSafe evaluation client and contract-derived next-tool candidates
+  without replacing the existing planner, graph, tool runner, or completion checks.
+- Added confidence-based planner fallback, bounded requests, cancellation support,
+  usage counters, and preservation of Jev mode across clarification and recovery.
+- Added offline routing/API/transport regressions and a mocked Jev browser fixture.
+- Verified the toggle and CSV cleanup end to end with the offline browser fixture.
+
+# LangGraph agent mode — 2026-09-27
+
+- Added a separate agent workspace with natural-language requests, optional CSV
+  uploads, live plans/tool progress, preview tables, and automatic CSV exports.
+- Added a manual/agent toggle while preserving the canvas and chat state.
+- Implemented a LangGraph decision/execute/inspect loop using existing tool logic.
+- Enforced tool/model budgets, duplicate detection, no-progress and failure stops,
+  frozen completion checks, cancellation, and clarification without budget resets.
+- Generated prompt stopping rules from the same backend limits; no global deadline.
+- Added explicit planner setup, session-local streaming/recovery endpoints, and
+  configurable research/search job polling bounds.
+- Added offline adversarial loop tests and an isolated browser test fixture.
+
 # One module per tool — 2026-09-26
 
 - Moved enrichment request construction and response handling into the eight

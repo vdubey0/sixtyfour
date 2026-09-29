@@ -3,7 +3,7 @@ set -euo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")"
 ROOT="$PWD"
-PYTHON="${PYTHON:-$ROOT/backend/.venv/bin/python}"
+PYTHON="${PYTHON:-$ROOT/backend/.venv-agent/bin/python}"
 BACKEND_PORT="${BACKEND_PORT:-8000}"
 FRONTEND_PORT="${FRONTEND_PORT:-5173}"
 
