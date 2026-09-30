@@ -328,7 +328,7 @@ export function BlockNode({
                   minHeight: 20,
                   gap: 4,
                   fontSize: 12,
-                  lineHeight: "14px",
+                  lineHeight: "14px", 
                 }}
               >
                 <span style={{ flex: 1, textAlign: "left" }}>

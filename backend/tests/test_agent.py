@@ -99,6 +99,34 @@ class AgentLoopTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual([e['event'] for e in events if e['event'].startswith('tool_')], ['tool_started', 'tool_done'])
         self.assertEqual(len(list(self.root.rglob('*.csv'))), 1)
 
+    async def test_excess_complete_candidates_selects_first_requested_and_exports(self):
+        run = self.make_run([plan(min_rows=2, max_rows=2), tool('find_prospects', {'query': 'Engineering leads'})])
+        rows = pd.DataFrame({'email': ['first@example.com', 'second@example.com', 'third@example.com']})
+        with patch('backend.agent.tools.get_block_function', return_value=lambda *_: rows):
+            await self.execute(run)
+        self.assertEqual(run.status, 'completed')
+        self.assertEqual(run.data()['email'].tolist(), rows['email'].tolist()[:2])
+        self.assertEqual(len(run.context.snapshots['step-1']), 3)
+        self.assertEqual(run.model_requests, 2)
+        self.assertEqual(run.final['row_count'], 2)
+        exported = pd.read_csv(next(self.root.rglob('*.csv')))
+        self.assertEqual(exported['email'].tolist(), rows['email'].tolist()[:2])
+
+    async def test_excess_candidates_with_incomplete_prefix_are_not_selected(self):
+        run = self.make_run([], seeded=True)
+        run.contract = contract(min_rows=1, max_rows=1)
+        run.context.snapshots['seed'] = pd.DataFrame({'email': [None, 'complete@example.com']})
+        run.select_requested_rows()
+        self.assertEqual(run.current, 'seed')
+        self.assertFalse(run.checks()['satisfied'])
+
+    async def test_minimum_count_does_not_truncate_candidates(self):
+        run = self.make_run([], seeded=True)
+        run.contract = contract(min_rows=1)
+        run.context.snapshots['seed'] = pd.DataFrame({'email': ['a@example.com', 'b@example.com']})
+        run.select_requested_rows()
+        self.assertEqual(len(run.data()), 2)
+
     async def test_csv_filter_then_deduplicate_uses_real_tools(self):
         run = self.make_run([plan(mode='unknown', min_rows=2, max_rows=2, unique_by=['email']),
                              tool('filter', {'rules': [{'column': 'email', 'operator': 'is_present'}]}),
@@ -225,7 +253,7 @@ class AgentLoopTests(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(run.final['downloads'])
 
     async def test_stop_during_tool_preserves_last_snapshot(self):
-        run = self.make_run([plan(), tool('find_email')], seeded=True)
+        run = self.make_run([plan(), tool('find_phone')], seeded=True)
         def long_job(df, config, context):
             context.wait(100)
             return df
@@ -360,6 +388,33 @@ class AgentAPITests(unittest.TestCase):
 
 
 class AgentConfigurationTests(unittest.TestCase):
+    def test_redundant_lookups_are_rejected_but_missing_fields_and_refreshes_allowed(self):
+        run = AgentRun('Complete missing contact information')
+        df = pd.DataFrame({'name': ['Ada'], 'email': ['ada@example.com'],
+                           'personal_email': ['ada@personal.com'], 'phone': ['123'],
+                           'linkedin': ['https://linkedin.com/in/ada'], 'title': ['Engineer'],
+                           'work_email': ['ada@example.com']})
+        run.current = 'seed'
+        run.context.snapshots['seed'] = df
+        run.context.schema_snapshots['seed'] = DatasetSchema('people', set(df.columns))
+        for name, args in (
+            ('find_email', {}), ('find_email', {'mode': 'PERSONAL'}),
+            ('find_email', {'input_mapping': {'name': 'name', 'email': 'work_email'}}),
+            ('find_phone', {}), ('enrich_lead', {'struct': {'title': 'Job title'}}),
+            ('enrich_linkedin', {'struct': {'title': 'Job title'}}),
+        ):
+            with self.subTest(tool=name, args=args):
+                with self.assertRaisesRegex(ValueError, 'Unnecessary tool'):
+                    prepare(run, tool(name, args))
+        prepare(run, tool('enrich_lead', {'struct': {'company': 'Employer'}}))
+        prepare(run, tool('enrich_lead', {'struct': {'title': 'Job title'}, 'overwrite': True}))
+        prepare(run, tool('find_email', {'only_missing': False, 'verify_emails': True}))
+        df.loc[0, 'phone'] = ' '
+        prepare(run, tool('find_phone'))
+        run.context.schema_snapshots['seed'].mode = 'companies'
+        with self.assertRaisesRegex(ValueError, 'Unnecessary tool'):
+            prepare(run, tool('research_companies', {'struct': {'name': 'Company name'}}))
+
     def test_environment_cannot_disable_or_raise_limits(self):
         with patch.dict(os.environ, {'AGENT_TOOL_ATTEMPTS': '999', 'AGENT_MODEL_REQUESTS': '0', 'AGENT_NO_PROGRESS': 'bad'}):
             limits = Limits.configured()

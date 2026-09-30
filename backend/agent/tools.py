@@ -95,6 +95,20 @@ def prepare(run, decision):
             raise ValueError('Merged dataset would exceed the row limit.')
     schema = DatasetSchema(mode, set(df.columns))
     validate_input(kind, config, schema)
+    # Reject provably redundant lookups before submitting a paid tool call.
+    # Explicit refreshes and verification may need new evidence despite populated cells.
+    targets = []
+    if not config.get('overwrite'):
+        if kind in ('enrich_lead', 'research_companies', 'enrich_linkedin'):
+            targets = list(config['struct'])
+        elif kind in ('find_email', 'find_phone') and config.get('only_missing'):
+            target = 'phone'
+            if kind == 'find_email':
+                target = 'personal_email' if config['mode'] == 'PERSONAL' else 'email'
+            targets = [config.get('input_mapping', {}).get(target, target)]
+    if targets and all(c in df and not df[c].map(missing).any() for c in targets):
+        raise ValueError('Unnecessary tool: all requested fields are already present in the input dataframe. '
+                         'Reuse existing values and address only unmet completion criteria; finish if satisfied.')
     predicted = output_schema(kind, config, schema, run.context.schema_snapshots)
     # Snapshot names do not evade duplicate detection for identical contents.
     normalized = dict(config)

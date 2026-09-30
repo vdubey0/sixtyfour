@@ -19,6 +19,10 @@ The contract must capture the whole request: count, entity type, nonempty reques
 columns, and conditions backed by real data (e.g. email_status for verified email).
 Include unique_by keys for deduplication requests. Completion checks every delivered row,
 so filter out unqualified rows before finishing. Exact counts need max_rows as well.
+When more candidates than requested are available and all candidates meet every
+requirement with all requested information present, choose the first requested
+candidates in their existing order and finish. The backend selects this prefix
+automatically; no extra search, enrichment, ranking, or clarification is needed.
 For qualitative criteria, use qualify_leads to produce explicit verdicts and encode
 them as conditions. Never claim verified email merely because email exists.
 Put requirements that cannot be tested in unresolved_requirements; they prevent success.
@@ -32,6 +36,21 @@ filter vocabulary before guessing filters. Sources create a new dataset; transfo
 use current or a specified snapshot. Merge appends compatible snapshots, not a join.
 CSV loading is automatic. Export is automatic at termination: no save tool is needed.
 Only supported structured filters are available; never generate Python or shell code.
+
+REUSE EXISTING INFORMATION
+Before every tool call, compare the unmet completion criteria with the current
+dataframe's columns, missing_counts, and existing evidence. Reuse populated fields,
+including equivalent fields under other column names via explicit mappings. Do not
+search, enrich, or research information already present merely to follow a plan step.
+Do not call inspect_dataset for information already supplied in the observation.
+Research only missing requested fields; for email and phone lookups keep only_missing
+true and overwrite false. Refresh or overwrite existing information only when the
+user requests it, or new verification evidence is required by the completion contract.
+A populated email does not establish verified status, and raw descriptive text does
+not replace semantic qualification. Continue those checks when their evidence is missing.
+If only filtering, deduplication, or count selection remains, use existing data for
+those operations instead of repeating discovery or enrichment. Finish immediately
+when all completion criteria are satisfied, even if planned steps remain.
 
 QUALIFICATION VERSUS FILTERING
 Prefer qualify_leads whenever selecting leads requires interpreting business meaning,

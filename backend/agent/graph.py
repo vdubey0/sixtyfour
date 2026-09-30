@@ -98,6 +98,26 @@ class AgentRun:
         schema = self.context.schema_snapshots.get(self.current, DatasetSchema())
         return check_contract(self.contract, self.data(), schema.mode)
 
+    def select_requested_rows(self):
+        """Keep the first requested rows only when they satisfy the full contract."""
+        df = self.data()
+        if self.contract is None or self.contract.max_rows is None or df is None:
+            return
+        if len(df) <= self.contract.max_rows:
+            return
+        selected = df.head(self.contract.max_rows).copy()
+        schema = self.context.schema_snapshots.get(self.current, DatasetSchema())
+        uncapped = self.contract.model_copy(update={'max_rows': None})
+        if not check_contract(uncapped, df, schema.mode)['satisfied']:
+            return
+        if not check_contract(self.contract, selected, schema.mode)['satisfied']:
+            return
+        snapshot_id = self.current + ':selected'
+        self.context.snapshots[snapshot_id] = selected
+        self.context.schema_snapshots[snapshot_id] = DatasetSchema(schema.mode, set(selected.columns))
+        self.current = snapshot_id
+        self.emit({'event': 'notice', 'message': 'Selected the first %s candidates that meet all requested requirements.' % len(selected)})
+
     def redact(self, error):
         message = str(error)
         for name in ('SIXTYFOUR_API_KEY', 'OPENAI_API_KEY', 'TYPESAFE_API_KEY'):
@@ -242,6 +262,11 @@ def build_graph(run):
         return selected
 
     async def decide(_state):
+        run.context.check_cancelled()
+        run.select_requested_rows()
+        if run.checks()['satisfied']:
+            run.stop('criteria_met', 'The result meets the planned completion criteria.', 'completed')
+            return run.graph_state('finalize')
         if not run.guard(before_model=True):
             return run.graph_state('finalize')
         decision = await route_with_jev()
@@ -372,6 +397,7 @@ def build_graph(run):
             run.emit({'event': 'tool_done', **summary, **preview(df), 'budgets': run.budget()})
             run.pending_result = None
             # Objective success can finish on the final allowed tool without an extra model call.
+            run.select_requested_rows()
             if run.checks()['satisfied']:
                 run.stop('criteria_met', 'The result meets the planned completion criteria.', 'completed')
         if run.status == 'running':
