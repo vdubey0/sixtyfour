@@ -30,7 +30,7 @@ def process_rows(df, config, context, kind, request, parse_response=None,
     # request submits a row or returns SKIP_ROW; parse_response extracts fields.
     # expand_rows optionally replaces one input row with several output rows.
     operations = (request, parse_response, required_columns, expand_rows, output_columns)
-    if len(df) <= 1 or config.get('max_workers', 8) == 1:
+    if len(df) <= 1 or config.get('max_workers', 32) == 1:
         return _process_rows_serial(df, config, context, kind, *operations)
     stopped = threading.Event()
 
@@ -61,7 +61,7 @@ def process_rows(df, config, context, kind, request, parse_response=None,
     # Futures finish out of order; index slots restore the original input order.
     frames = [None] * len(df)
     failures = 0
-    with ThreadPoolExecutor(max_workers=config.get('max_workers', 8)) as pool:
+    with ThreadPoolExecutor(max_workers=config.get('max_workers', 32)) as pool:
         futures = {pool.submit(_process_rows_serial, df.iloc[i:i+1].copy(), config, RowContext(i+1), kind, *operations): i for i in range(len(df))}
         try:
             for completed, future in enumerate(as_completed(futures), 1):

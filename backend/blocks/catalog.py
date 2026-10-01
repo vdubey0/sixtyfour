@@ -115,8 +115,8 @@ CATALOG = [
 BY_TYPE = {item['type']: item for item in CATALOG}
 for item in CATALOG:
     if item['group'] == 'Enrichment':
-        item['fields'].append(field('max_workers', 'Concurrent rows', 'number', 8,
-                                    minimum=1, maximum=8,
+        item['fields'].append(field('max_workers', 'Concurrent rows', 'number', 32,
+                                    minimum=1, maximum=32,
                                     help='Maximum simultaneous row lookups. Results retain input order.'))
 
 

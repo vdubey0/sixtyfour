@@ -241,7 +241,7 @@ Exports are written to `outputs/runs/<run-id>/<step>-<filename>.csv`. Separate r
 - Each completed step exposes its row count, columns, and first 20 rows. Select a result step or a completed canvas node to inspect it. Click a nonempty cell to expand its full value, including formatted JSON.
 - **Inspect data** adds missing-value, distinct-count, and type statistics. Search discovery blocks also expose provider metadata.
 - Enrichment fills missing values unless **Replace existing values** is enabled. Email and phone tools can skip rows with existing values. To force email rediscovery, disable skipping and enable replacement.
-- Row enrichment defaults to eight concurrent rows, configurable from one to eight. Output retains input order.
+- Row enrichment defaults to 32 concurrent rows, configurable from one to 32. Output retains input order.
 - `_status` and `_error` describe the latest API step. `_raw_response` preserves its provider JSON, while `_history` retains previous API steps and errors. Evidence and confidence fields are kept when supplied by the provider.
 - Search follows cursors until the configured result cap or exhaustion, including when intermediate pages are short or empty. Exclusions are reapplied when browsing completed deep searches.
 
